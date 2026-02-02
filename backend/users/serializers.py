@@ -1,10 +1,12 @@
 import base64
 import uuid
+
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
 from djoser.serializers import TokenCreateSerializer
 from rest_framework import serializers
+
 from .models import Subscription
 
 User = get_user_model()
