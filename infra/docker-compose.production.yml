@@ -1,0 +1,47 @@
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    image: blackwach/foodgram_backend
+    env_file: .env
+    volumes:
+      - static:/static
+      - media:/media
+
+  frontend:
+    env_file: .env
+    image: blackwach/foodgram_frontend
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
+
+  gateway:
+    image: blackwach/foodgram_gateway
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    ports:
+      - 9000:80
+    volumes:
+      - static:/static
+      - media:/media
+    restart: on-failure
