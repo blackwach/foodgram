@@ -1,6 +1,5 @@
 import io
 import os
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -111,7 +110,10 @@ class Recipe(models.Model):
 
 
 class IngredientInRecipe(models.Model):
-    """Вспомогательный класс, для колличества ингредиентов в рецепте."""
+    """
+    Вспомогательный класс, для колличества 
+    ингредиентов в рецепте.
+    """
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -140,7 +142,9 @@ class IngredientInRecipe(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}'
+        return (f'{self.ingredient.name} - '
+        f'{self.amount} {self.ingredient.measurement_unit}'
+        )
 
 
 class Favorite(models.Model):
@@ -212,11 +216,15 @@ class ShoppingCart(models.Model):
 def upload_csv_file(instance, filename):
     return f'csv_uploads/ingredients/{filename}'
 
+
 def csv_file_validator(value):
     filename, ext = os.path.splitext(value.name)
     if str(ext).lower() != '.csv':
-        raise ValidationError("Файл должен быть в формате .CSV")
+        raise ValidationError(
+            "Файл должен быть в формате .CSV"
+            )
     return True
+
 
 class CSVUpload(models.Model):
     user = models.ForeignKey(

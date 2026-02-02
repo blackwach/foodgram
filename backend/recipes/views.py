@@ -5,7 +5,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -69,7 +68,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def get_queryset(self):
         qs = self.queryset
@@ -79,14 +80,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if is_favorited == '1':
             if not user.is_authenticated:
                 return qs.none()
-            fav_ids = list(Favorite.objects.filter(user=user).values_list('recipe_id', flat=True))
+            fav_ids = list(
+                Favorite.objects.filter(user=user).values_list(
+                    'recipe_id', flat=True
+                )
+            )
             qs = qs.filter(id__in=fav_ids) if fav_ids else qs.none()
 
-        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart'
+        )
         if is_in_shopping_cart == '1':
             if not user.is_authenticated:
                 return qs.none()
-            cart_ids = ShoppingCart.objects.filter(user=user).values_list('recipe_id', flat=True)
+            cart_ids = ShoppingCart.objects.filter(
+                user=user
+                ).values_list('recipe_id', flat=True)
             if cart_ids:
                 qs = qs.filter(id__in=cart_ids)
             else:
@@ -119,13 +128,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, pk=pk)
 
         if request.method == 'POST':
-            if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
+            if Favorite.objects.filter(
+                user=request.user, recipe=recipe
+                ).exists():
                 return Response(
                     {'detail': 'Рецепт уже в избранном'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             Favorite.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeMinifiedSerializer(recipe, context={'request': request})
+            serializer = RecipeMinifiedSerializer(
+                recipe, context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
@@ -160,7 +173,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     {'message': 'Рецепт уже в списке покупок'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            serializer = RecipeMinifiedSerializer(recipe, context={'request': request})
+            serializer = RecipeMinifiedSerializer(
+                recipe, context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
@@ -185,7 +200,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         cart = ShoppingCart.objects.filter(
             user=request.user
-        ).select_related('recipe').prefetch_related('recipe__ingredient_amounts__ingredient')
+        ).select_related('recipe').prefetch_related(
+            'recipe__ingredient_amounts__ingredient'
+        )
 
         if not cart.exists():
             return Response(
@@ -194,9 +211,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
 
         content = generate_shopping_cart_file(cart)
-        
+
         filename = f'shopping_cart_{request.user.id}.txt'
-        response = HttpResponse(content, content_type='text/plain; charset=utf-8')
+        response = HttpResponse(
+            content, content_type='text/plain; charset=utf-8'
+        )
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 

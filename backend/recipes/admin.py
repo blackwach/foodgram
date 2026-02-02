@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models import (
     CSVUpload,
     Favorite,
@@ -51,7 +50,9 @@ class IngredientInRecipeInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'cooking_time', 'ingredients_count', 'created_at')
+    list_display = (
+        'name', 'author', 'cooking_time', 'ingredients_count', 'created_at'
+    )
     list_filter = ('tags', 'created_at', 'author')
     search_fields = ('name', 'author__username', 'text')
     inlines = [IngredientInRecipeInline]

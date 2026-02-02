@@ -1,9 +1,7 @@
 import base64
 import uuid
-
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-
 from .models import (
     Favorite,
     Ingredient,
@@ -27,7 +25,9 @@ class Base64ImageField(serializers.ImageField):
                     name=f'{uuid.uuid4()}.{ext}'
                 )
             except (ValueError, IndexError):
-                raise serializers.ValidationError('Неверный формат Base64 изображения')
+                raise serializers.ValidationError(
+                    'Неверный формат Base64 изображения'
+                    )
 
         return super().to_internal_value(data)
 
@@ -156,7 +156,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.context.get('request') and self.context['request'].method == 'POST':
+        if (self.context.get('request') 
+                and self.context['request'].method == 'POST'):
             self.fields['image'].required = True
 
     def validate_ingredients(self, value):
@@ -170,7 +171,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 'Ингредиенты не должны повторяться'
             )
 
-        existing = Ingredient.objects.filter(id__in=ids).values_list('id', flat=True)
+        existing = Ingredient.objects.filter(
+            id__in=ids
+            ).values_list('id', flat=True)
         missing = [i for i in ids if i not in existing]
         if missing:
             raise serializers.ValidationError(

@@ -1,17 +1,17 @@
 import base64
 import uuid
-
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
 from djoser.serializers import TokenCreateSerializer
 from rest_framework import serializers
-
 from .models import Subscription
 
 User = get_user_model()
 
+
 class Base64ImageField(serializers.ImageField):
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             try:
@@ -23,12 +23,15 @@ class Base64ImageField(serializers.ImageField):
                     name=f'{uuid.uuid4()}.{ext}'
                 )
             except (ValueError, IndexError):
-                raise serializers.ValidationError('Неверный формат Base64 изображения')
+                raise serializers.ValidationError(
+                    'Неверный формат Base64 изображения'
+                )
 
         return super().to_internal_value(data)
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
 
@@ -64,6 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):
+
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -88,6 +92,7 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
 
 
 class SetPasswordSerializer(serializers.Serializer):
+
     new_password = serializers.CharField(
         required=True,
         validators=[validate_password]
@@ -108,6 +113,7 @@ class SetPasswordSerializer(serializers.Serializer):
 
 
 class SetAvatarSerializer(serializers.ModelSerializer):
+
     avatar = Base64ImageField(required=True)
 
     class Meta:
@@ -132,7 +138,9 @@ class SetAvatarSerializer(serializers.ModelSerializer):
         if instance.avatar:
             request = self.context.get('request')
             if request:
-                representation['avatar'] = request.build_absolute_uri(instance.avatar.url)
+                representation['avatar'] = request.build_absolute_uri(
+                    instance.avatar.url
+                )
             else:
                 representation['avatar'] = instance.avatar.url
         else:
@@ -169,14 +177,16 @@ class UserWithRecipesSerializer(UserSerializer):
 
 
 class CustomTokenCreateSerializer(TokenCreateSerializer):
-    """Кастомный сериализатор для создания токена с использованием email"""
-    password = serializers.CharField(required=False, style={'input_type': 'password'})
+
+    password = serializers.CharField(
+        required=False, style={'input_type': 'password'}
+    )
 
     @property
     def user(self):
-        """Переопределяем свойство user для обеспечения совместимости с djoser"""
 
-        if hasattr(self, 'validated_data') and self.validated_data and 'user' in self.validated_data:
+        if (hasattr(self, 'validated_data') and self.validated_data
+        and 'user' in self.validated_data):
             return self.validated_data['user']
 
         if hasattr(self, '_user'):
@@ -185,10 +195,9 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
             return super().user
         except (AttributeError, KeyError):
             return None
-    
+
     @user.setter
     def user(self, value):
-        """Сеттер для свойства user - сохраняем в _user"""
         self._user = value
 
     def __init__(self, *args, **kwargs):
@@ -198,31 +207,37 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
 
         if 'username' in self.fields:
             del self.fields['username']
-    
+
     def validate(self, attrs):
         password = attrs.get("password")
         email = attrs.get("email")
-        
+
         if not email:
-            raise serializers.ValidationError('Необходимо указать .')
-        
+            raise serializers.ValidationError(
+                'Необходимо указать почту.'
+            )
+
         if not password:
-            raise serializers.ValidationError('Необходимо указать "password".')
+            raise serializers.ValidationError(
+                'Необходимо указать пароль.'
+            )
 
         user = authenticate(
             request=self.context.get("request"),
             username=email,
             password=password,
         )
-        
+
         if not user:
             raise serializers.ValidationError(
                 "Невозможно войти с предоставленными учетными данными."
             )
-        
+
         if not user.is_active:
-            raise serializers.ValidationError("Учетная запись пользователя отключена.")
-        
+            raise serializers.ValidationError(
+                "Учетная запись пользователя отключена."
+            )
+
         attrs["user"] = user
         self._user = user
         return attrs

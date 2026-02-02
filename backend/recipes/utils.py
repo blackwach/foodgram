@@ -12,7 +12,7 @@ def generate_shopping_cart_file(shopping_cart):
             ing_dict[key] += ing_amount.amount
 
     lines = ['Список покупок:\r\n']
-    
+
     for (name, unit), amount in sorted(ing_dict.items()):
         lines.append(f'{name} - {amount} {unit}\r\n')
 
