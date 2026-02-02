@@ -209,12 +209,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         content = generate_shopping_cart_file(cart)
 
-        filename = f'shopping_cart_{request.user.id}.txt'
-        response = HttpResponse(
-            content, content_type='text/plain; charset=utf-8'
+        filename = 'shopping_cart_{}.txt'.format(request.user.id)
+        content_type = 'text/plain'
+        response = HttpResponse(content, content_type=content_type)
+        response.charset = 'utf-8'
+        response['Content-Disposition'] = (
+            'attachment' + '; ' + 'filename="{}"'.format(filename)
         )
-        content_disposition = f'attachment; filename="{filename}"'
-        response['Content-Disposition'] = content_disposition
         return response
 
     @action(
