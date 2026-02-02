@@ -8,13 +8,9 @@ from rest_framework.response import Response
 
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipeListSerializer,
-    RecipeMinifiedSerializer,
-    TagSerializer,
-)
+from .serializers import (IngredientSerializer, RecipeCreateSerializer,
+                          RecipeListSerializer, RecipeMinifiedSerializer,
+                          TagSerializer)
 from .utils import generate_shopping_cart_file
 
 
