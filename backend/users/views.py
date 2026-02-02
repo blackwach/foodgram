@@ -48,7 +48,6 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['post'],
         permission_classes=[IsAuthenticated]
     )
-
     def set_password(self, request):
         serializer = SetPasswordSerializer(
             data=request.data,

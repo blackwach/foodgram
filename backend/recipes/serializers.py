@@ -16,6 +16,7 @@ from .models import (
 
 class Base64ImageField(serializers.ImageField):
     """Преобразование Base64 в файл картинки."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             try:
@@ -29,7 +30,7 @@ class Base64ImageField(serializers.ImageField):
             except (ValueError, IndexError):
                 raise serializers.ValidationError(
                     'Неверный формат Base64 изображения'
-                    )
+                )
 
         return super().to_internal_value(data)
 
@@ -158,7 +159,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if (self.context.get('request') 
+        if (self.context.get('request')
                 and self.context['request'].method == 'POST'):
             self.fields['image'].required = True
 
@@ -175,7 +176,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         existing = Ingredient.objects.filter(
             id__in=ids
-            ).values_list('id', flat=True)
+        ).values_list('id', flat=True)
         missing = [i for i in ids if i not in existing]
         if missing:
             raise serializers.ValidationError(

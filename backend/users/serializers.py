@@ -128,7 +128,7 @@ class SetAvatarSerializer(serializers.ModelSerializer):
                 'avatar': 'Это поле обязательно.'
             })
         return attrs
-    
+
     def update(self, instance, validated_data):
         if 'avatar' in validated_data:
             instance.avatar = validated_data['avatar']
@@ -188,7 +188,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     def user(self):
 
         if (hasattr(self, 'validated_data') and self.validated_data
-        and 'user' in self.validated_data):
+                and 'user' in self.validated_data):
             return self.validated_data['user']
 
         if hasattr(self, '_user'):

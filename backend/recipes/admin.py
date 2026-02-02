@@ -113,7 +113,7 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', 'id')
     search_fields = ('user__username', 'recipe__name')
     raw_id_fields = ('user', 'recipe')
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related('user', 'recipe')

@@ -96,7 +96,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return qs.none()
             cart_ids = ShoppingCart.objects.filter(
                 user=user
-                ).values_list('recipe_id', flat=True)
+            ).values_list('recipe_id', flat=True)
             if cart_ids:
                 qs = qs.filter(id__in=cart_ids)
             else:
@@ -131,7 +131,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             if Favorite.objects.filter(
                 user=request.user, recipe=recipe
-                ).exists():
+            ).exists():
                 return Response(
                     {'detail': 'Рецепт уже в избранном'},
                     status=status.HTTP_400_BAD_REQUEST

@@ -104,7 +104,7 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     @property
     def favorites_count(self):
         return self.favorites.count()
@@ -112,7 +112,7 @@ class Recipe(models.Model):
 
 class IngredientInRecipe(models.Model):
     """
-    Вспомогательный класс, для колличества 
+    Вспомогательный класс, для колличества
     ингредиентов в рецепте.
     """
     recipe = models.ForeignKey(
@@ -144,8 +144,8 @@ class IngredientInRecipe(models.Model):
 
     def __str__(self):
         return (f'{self.ingredient.name} - '
-        f'{self.amount} {self.ingredient.measurement_unit}'
-        )
+                f'{self.amount} {self.ingredient.measurement_unit}'
+                )
 
 
 class Favorite(models.Model):
@@ -223,7 +223,7 @@ def csv_file_validator(value):
     if str(ext).lower() != '.csv':
         raise ValidationError(
             "Файл должен быть в формате .CSV"
-            )
+        )
     return True
 
 
