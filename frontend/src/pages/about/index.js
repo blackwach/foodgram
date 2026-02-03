@@ -41,7 +41,7 @@ const About = ({ updateOrders, orders }) => {
               Код проекта находится тут - <a href="https://github.com/blackwach" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Github</a>
             </p>
             <p className={styles.textItem}>
-              Автор проекта backend: <a href="https://vk.com/black_wach" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Имя Автора</a>
+              Автор проекта backend: <a href="https://vk.com/black_wach" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Denis Biryukov</a>
             </p>
           </div>
         </aside>
