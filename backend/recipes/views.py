@@ -38,6 +38,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        is_favorited = self.request.query_params.get('is_favorited')
+        if is_favorited:
+            try:
+                is_favorited = int(is_favorited)
+                if is_favorited == 1:
+                    if not self.request.user.is_authenticated:
+                        return queryset.none()
+                    fav_ids = Favorite.objects.filter(
+                        user=self.request.user
+                    ).values_list('recipe_id', flat=True)
+                    queryset = queryset.filter(id__in=fav_ids) if fav_ids else queryset.none()
+            except (ValueError, TypeError):
+                pass
+        
+        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        if is_in_shopping_cart:
+            try:
+                is_in_shopping_cart = int(is_in_shopping_cart)
+                if is_in_shopping_cart == 1:
+                    if not self.request.user.is_authenticated:
+                        return queryset.none()
+                    cart_ids = ShoppingCart.objects.filter(
+                        user=self.request.user
+                    ).values_list('recipe_id', flat=True)
+                    queryset = queryset.filter(id__in=cart_ids) if cart_ids else queryset.none()
+            except (ValueError, TypeError):
+                pass
+        
+        return queryset
+    
+    def get_filterset_kwargs(self):
+        """Передаем request в FilterSet"""
+        kwargs = super().get_filterset_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeCreateSerializer
