@@ -51,7 +51,7 @@
 Слаг - Zavtrak
 Готово! Теперь можно создавать новые аккаунты и добавлять рецепты, а так же делиться ими.
 
-## Доменное и IP
+## Доменное имя и IP
 [https://blackwachlearn.duckdns.org](https://blackwachlearn.duckdns.org)
 
 Админка доступна по внешнему IP:
