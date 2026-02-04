@@ -38,12 +38,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
-
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.select_related('author').prefetch_related('tags')
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = RecipeFilter
-
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
