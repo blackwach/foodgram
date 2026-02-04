@@ -28,7 +28,7 @@ class RecipeFilter(django_filters.FilterSet):
         fields = ['tags', 'author']
 
     def filter_is_favorited(self, queryset, name, value):
-        if not value:
+        if not value or value == 0:
             return queryset
 
         request = self.request
@@ -42,7 +42,7 @@ class RecipeFilter(django_filters.FilterSet):
         return queryset.filter(id__in=fav_ids) if fav_ids else queryset.none()
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        if not value:
+        if not value or value == 0:
             return queryset
 
         request = self.request
@@ -53,6 +53,4 @@ class RecipeFilter(django_filters.FilterSet):
             user=request.user
         ).values_list('recipe_id', flat=True)
 
-        if cart_ids:
-            return queryset.filter(id__in=cart_ids)
-        return queryset.none()
+        return queryset.filter(id__in=cart_ids) if cart_ids else queryset.none()
