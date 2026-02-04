@@ -59,5 +59,5 @@
 [http://89.169.183.122:9000/admin/](http://89.169.183.122:9000/admin/)
 
 Данные для доступа:
-[adminskychel@admin.ru]
-[123456789]
+adminskychel@admin.ru
+123456789
