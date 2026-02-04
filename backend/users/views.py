@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -6,12 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Subscription
+from .models import Subscription, User
 from .serializers import (CustomUserCreateSerializer, SetAvatarSerializer,
                           SetPasswordSerializer, UserSerializer,
                           UserWithRecipesSerializer)
-
-User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -59,6 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['put', 'delete'],
         permission_classes=[IsAuthenticated]
     )
+    @transaction.atomic
     def set_avatar(self, request):
         if request.method == 'DELETE':
             if request.user.avatar:
@@ -87,6 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['get'],
         permission_classes=[IsAuthenticated]
     )
+    @transaction.atomic
     def subscriptions(self, request):
         sub_ids = Subscription.objects.filter(
             user=request.user

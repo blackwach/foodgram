@@ -1,35 +1,11 @@
-import base64
-import uuid
-
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.core.files.base import ContentFile
+from django.db import transaction
 from djoser.serializers import TokenCreateSerializer
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from .models import Subscription
-
-User = get_user_model()
-
-
-class Base64ImageField(serializers.ImageField):
-
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            try:
-                format, imgstr = data.split(';base64,')
-                ext = format.split('/')[-1]
-
-                data = ContentFile(
-                    base64.b64decode(imgstr),
-                    name=f'{uuid.uuid4()}.{ext}'
-                )
-            except (ValueError, IndexError):
-                raise serializers.ValidationError(
-                    'Неверный формат Base64 изображения'
-                )
-
-        return super().to_internal_value(data)
+from .models import Subscription, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -88,8 +64,12 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id',)
 
+    @transaction.atomic
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+        user = super().create(validated_data)
+        user.set_password(password)
+        user.save()
         return user
 
 
@@ -129,11 +109,9 @@ class SetAvatarSerializer(serializers.ModelSerializer):
             })
         return attrs
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        if 'avatar' in validated_data:
-            instance.avatar = validated_data['avatar']
-            instance.save()
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -183,6 +161,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     password = serializers.CharField(
         required=False, style={'input_type': 'password'}
     )
+    email = serializers.EmailField(required=False)
 
     @property
     def user(self):
@@ -202,42 +181,34 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     def user(self, value):
         self._user = value
 
-    def __init__(self, *args, **kwargs):
-        self._user = None
-        super().__init__(*args, **kwargs)
-        self.fields['email'] = serializers.EmailField(required=False)
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError('Необходимо указать почту.')
+        return value
 
-        if 'username' in self.fields:
-            del self.fields['username']
+    def validate_password(self, value):
+        if not value:
+            raise serializers.ValidationError('Необходимо указать пароль.')
+        return value
 
     def validate(self, attrs):
-        password = attrs.get("password")
-        email = attrs.get("email")
-
-        if not email:
-            raise serializers.ValidationError(
-                'Необходимо указать почту.'
-            )
-
-        if not password:
-            raise serializers.ValidationError(
-                'Необходимо указать пароль.'
-            )
+        email = attrs['email']
+        password = attrs['password']
 
         user = authenticate(
-            request=self.context.get("request"),
+            request=self.context.get('request'),
             username=email,
             password=password,
         )
 
         if not user:
             raise serializers.ValidationError(
-                "Невозможно войти с предоставленными учетными данными."
+                'Невозможно войти с предоставленными учетными данными.'
             )
 
         if not user.is_active:
             raise serializers.ValidationError(
-                "Учетная запись пользователя отключена."
+                'Учетная запись пользователя отключена.'
             )
 
         attrs["user"] = user

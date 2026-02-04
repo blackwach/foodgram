@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from .constants import DEFAULT_PAGE_SIZE
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv(
@@ -24,6 +26,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'django_filters',
+    'import_export',
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
 ]
@@ -115,7 +118,8 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PAGINATION_CLASS': 'foodgram_backend.pagination.LimitPageNumberPagination',
-    'PAGE_SIZE': 6,
+    'PAGE_SIZE': DEFAULT_PAGE_SIZE,
+    'SEARCH_PARAM': 'name',
 }
 
 DJOSER = {

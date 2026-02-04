@@ -1,32 +1,9 @@
-import base64
-import uuid
-
-from django.core.files.base import ContentFile
+from django.db import transaction
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
-
-
-class Base64ImageField(serializers.ImageField):
-    """Преобразование Base64 в файл картинки."""
-
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            try:
-                format, imgstr = data.split(';base64,')
-                ext = format.split('/')[-1]
-
-                data = ContentFile(
-                    base64.b64decode(imgstr),
-                    name=f'{uuid.uuid4()}.{ext}'
-                )
-            except (ValueError, IndexError):
-                raise serializers.ValidationError(
-                    'Неверный формат Base64 изображения'
-                )
-
-        return super().to_internal_value(data)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -151,11 +128,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if (self.context.get('request')
-                and self.context['request'].method == 'POST'):
-            self.fields['image'].required = True
+    def validate_image(self, value):
+        request = self.context.get('request')
+        if request and request.method == 'POST' and not value:
+            raise serializers.ValidationError(
+                'Поле image обязательно при создании рецепта.'
+            )
+        return value
 
     def validate_ingredients(self, value):
         if not value:
@@ -209,24 +188,24 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ))
         IngredientInRecipe.objects.bulk_create(items)
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(
-            author=self.context['request'].user,
-            **validated_data
-        )
+
+        validated_data['author'] = self.context['request'].user
+        recipe = super().create(validated_data)
+
         recipe.tags.set(tags)
         self._add_ingredients(recipe, ingredients)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
 
         instance.tags.set(tags)
         instance.ingredient_amounts.all().delete()

@@ -1,12 +1,11 @@
-import io
-import os
-
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
+from .constants import (INGREDIENT_NAME_MAX_LENGTH,
+                        MEASUREMENT_UNIT_MAX_LENGTH, MIN_COOKING_TIME,
+                        MIN_INGREDIENT_AMOUNT, RECIPE_NAME_MAX_LENGTH,
+                        TAG_NAME_MAX_LENGTH, TAG_SLUG_MAX_LENGTH)
 
 User = get_user_model()
 
@@ -14,12 +13,12 @@ User = get_user_model()
 class Tag(models.Model):
     name = models.CharField(
         'Название',
-        max_length=32,
+        max_length=TAG_NAME_MAX_LENGTH,
         unique=True
     )
     slug = models.SlugField(
         'Слаг',
-        max_length=32,
+        max_length=TAG_SLUG_MAX_LENGTH,
         unique=True
     )
 
@@ -35,11 +34,11 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(
         'Название',
-        max_length=128
+        max_length=INGREDIENT_NAME_MAX_LENGTH
     )
     measurement_unit = models.CharField(
         'Единица измерения',
-        max_length=64
+        max_length=MEASUREMENT_UNIT_MAX_LENGTH
     )
 
     class Meta:
@@ -60,7 +59,7 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     name = models.CharField(
         'Название',
-        max_length=256
+        max_length=RECIPE_NAME_MAX_LENGTH
     )
     text = models.TextField('Описание')
     image = models.ImageField(
@@ -69,7 +68,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveIntegerField(
         'Время приготовления (в минутах)',
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(MIN_COOKING_TIME)]
     )
     author = models.ForeignKey(
         User,
@@ -129,7 +128,7 @@ class IngredientInRecipe(models.Model):
     )
     amount = models.PositiveIntegerField(
         'Количество',
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)]
     )
 
     class Meta:
@@ -212,72 +211,3 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return f'{self.user} добавил в корзину {self.recipe}'
-
-
-def upload_csv_file(instance, filename):
-    return f'csv_uploads/ingredients/{filename}'
-
-
-def csv_file_validator(value):
-    filename, ext = os.path.splitext(value.name)
-    if str(ext).lower() != '.csv':
-        raise ValidationError(
-            "Файл должен быть в формате .CSV"
-        )
-    return True
-
-
-class CSVUpload(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Пользователь'
-    )
-    file = models.FileField(
-        upload_to=upload_csv_file,
-        validators=[csv_file_validator],
-        verbose_name='CSV файл'
-    )
-    completed = models.BooleanField(
-        default=False,
-        verbose_name='Завершено'
-    )
-
-    class Meta:
-        verbose_name = 'Загрузка CSV'
-        verbose_name_plural = 'Загрузки CSV'
-
-    def __str__(self):
-        return f"Загрузка CSV {self.id}"
-
-
-@receiver(post_save, sender=CSVUpload)
-def csv_upload_post_save(sender, instance, created, **kwargs):
-    if not instance.completed:
-        csv_file = instance.file
-
-        decoded_file = csv_file.read().decode('utf-8')
-        io_string = io.StringIO(decoded_file)
-
-        for line in io_string:
-            line = line.strip()
-            if not line:
-                continue
-
-            parts = line.split(',')
-
-            if len(parts) >= 2:
-                name = parts[0].strip()
-                measurement_unit = parts[1].strip()
-
-                Ingredient.objects.update_or_create(
-                    name=name,
-                    measurement_unit=measurement_unit,
-                    defaults={
-                        'name': name,
-                        'measurement_unit': measurement_unit
-                    }
-                )
-
-        instance.completed = True
-        instance.save()
