@@ -37,7 +37,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.select_related('author').prefetch_related('tags')
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    
+
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.select_related('author').prefetch_related('tags')
     filter_backends = [DjangoFilterBackend]
@@ -53,10 +54,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             else:
                 queryset = queryset.none()
 
-        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart')
         if is_in_shopping_cart == '1':
             if self.request.user.is_authenticated:
-                queryset = queryset.filter(shopping_cart__user=self.request.user)
+                queryset = queryset.filter(
+                    shopping_cart__user=self.request.user)
             else:
                 queryset = queryset.none()
 
