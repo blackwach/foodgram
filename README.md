@@ -13,7 +13,6 @@
 - **PostgreSQL 13** - база данных
 - **Gunicorn 23.0** - WSGI-сервер
 - **django-filter 24.3** - фильтрация данных
-- **drf-extra-fields 0.9** - дополнительные поля для сериализаторов
 - **Pillow 10.0** - работа с изображениями
 - **psycopg2-binary 2.9.9** - драйвер PostgreSQL
 - **Nginx** - веб-сервер
