@@ -1,10 +1,10 @@
 from django.contrib import admin
 from import_export.admin import ImportMixin
 
+from .constants import (LIST_PER_PAGE_FAVORITE, LIST_PER_PAGE_RECIPE,
+                        LIST_PER_PAGE_TAG)
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
-from .constants import (LIST_PER_PAGE_FAVORITE, LIST_PER_PAGE_RECIPE,
-                       LIST_PER_PAGE_TAG)
 from .utils import IngredientImportCSV
 
 
