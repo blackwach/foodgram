@@ -38,7 +38,12 @@ class IngredientImportCSV(resources.ModelResource):
                 dataset.headers = ['name', 'measurement_unit']
                 dataset.insert(0, first_row_data)
 
-        return super().import_data(dataset, dry_run, raise_errors, use_transactions, **kwargs)
+        return super().import_data(
+            dataset, dry_run,
+            raise_errors,
+            use_transactions,
+            **kwargs
+            )
 
 
 def generate_shopping_cart_file(shopping_cart):
