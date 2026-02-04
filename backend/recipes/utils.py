@@ -39,7 +39,7 @@ class IngredientImportCSV(resources.ModelResource):
             raise_errors,
             use_transactions,
             **kwargs
-            )
+        )
 
 
 def generate_shopping_cart_file(shopping_cart):
