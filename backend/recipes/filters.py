@@ -22,8 +22,8 @@ class RecipeFilter(django_filters.FilterSet):
     )
 
     def filter_is_favorited(self, queryset, name, value):
-        if (value and hasattr(self, 'request') and
-            self.request.user.is_authenticated):
+        if (value and hasattr(self, 'request')
+                and self.request.user.is_authenticated):
             favorites = (
                 Favorite.objects.filter(user=self.request.user)
                 .values_list('recipe_id', flat=True)
@@ -32,8 +32,8 @@ class RecipeFilter(django_filters.FilterSet):
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        if (value and hasattr(self, 'request') and
-            self.request.user.is_authenticated):
+        if (value and hasattr(self, 'request')
+                and self.request.user.is_authenticated):
             cart = (
                 ShoppingCart.objects.filter(user=self.request.user)
                 .values_list('recipe_id', flat=True)
