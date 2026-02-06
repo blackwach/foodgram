@@ -34,30 +34,15 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.select_related('author').prefetch_related('tags')
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeListSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-
-        is_favorited = self.request.query_params.get('is_favorited')
-        if is_favorited == '1':
-            if self.request.user.is_authenticated:
-                queryset = queryset.filter(favorites__user=self.request.user)
-            else:
-                queryset = queryset.none()
-
-        is_in_shopping_cart = self.request.query_params.get(
-            'is_in_shopping_cart')
-        if is_in_shopping_cart == '1':
-            if self.request.user.is_authenticated:
-                queryset = queryset.filter(
-                    shopping_cart__user=self.request.user)
-            else:
-                queryset = queryset.none()
-
-        return queryset
+    def get_filterset_kwargs(self):
+        kwargs = super().get_filterset_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:

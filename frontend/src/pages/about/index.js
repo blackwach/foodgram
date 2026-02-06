@@ -38,7 +38,7 @@ const About = ({ updateOrders, orders }) => {
           </h2>
           <div className={styles.text}>
             <p className={styles.textItem}>
-              Код проекта находится тут - <a href="https://github.com/blackwach" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Github</a>
+              Код проекта находится тут - <a href="https://github.com/blackwach/foodgram" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Github</a>
             </p>
             <p className={styles.textItem}>
               Автор проекта backend: <a href="https://vk.com/black_wach" target="_blank" rel="noopener noreferrer" className={styles.textLink}>Denis Biryukov</a>
